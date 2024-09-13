@@ -1,62 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import CryptoJS from 'crypto-js';
+import { TOTP } from 'totp-generator';
+import generateTotp from 'totp-generator';
 
-const secret: string = 'KBLVO432JR2UCM3VJ5UTA6KLIR2EQ23U';
+
+const secret: string = 'IFYGIODSNF2TQM3QNRLUK4CPKJFW223N';
 const period: number = 30;
 const digits: number = 6;
-const algorithm: 'SHA1' = 'SHA1';
-
-const base32ToBinary = (base32: string): Uint8Array => {
-    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let bits = '';
-    for (const char of base32.toUpperCase()) {
-        if (base32Chars.includes(char)) {
-            bits += base32Chars.indexOf(char).toString(2).padStart(5, '0');
-        }
-    }
-    return new Uint8Array(bits.match(/.{8}/g)!.map(byte => parseInt(byte, 2)));
-};
-
-const uint8ArrayToHex = (uint8Array: Uint8Array): string => {
-    return Array.from(uint8Array).map(byte => byte.toString(16).padStart(2, '0')).join('');
-};
-
-const generateOtp = (secret: string, digits: number, counter: number): string => {
-    const secretBinary = base32ToBinary(secret);
-    const counterBuffer = new Uint8Array(8);
-    new DataView(counterBuffer.buffer).setBigUint64(0, BigInt(counter), false);
-
-    const hmac = CryptoJS.HmacSHA1(
-        uint8ArrayToHex(counterBuffer),
-        uint8ArrayToHex(secretBinary)
-    );
-    const hmacHex = hmac.toString(CryptoJS.enc.Hex);
-
-    const offset = parseInt(hmacHex.slice(-1), 16) * 2;
-    const binary = parseInt(hmacHex.slice(offset, offset + 8), 16) & 0x7fffffff;
-    const otp = binary % Math.pow(10, digits);
-    return otp.toString().padStart(digits, '0');
-};
 
 const TOTPGenerator: React.FC = () => {
     const [totpCode, setTotpCode] = useState<string>('');
     const [remainingTime, setRemainingTime] = useState<number>(period);
+    const { otp, expires } = TOTP.generate(secret, {
+        digits: digits,
+        period: period,
+        algorithm: 'SHA-1',
+    });
 
     const generateTotp = () => {
-        const counter = Math.floor(Date.now() / 1000 / period);
-        const code = generateOtp(secret, digits, counter);
-        setTotpCode(code);
+        const { otp, expires } = TOTP.generate(secret, {
+            digits: digits,
+            period: period,
+            algorithm: 'SHA-1',
+        });
+        setTotpCode(otp);
     };
 
     useEffect(() => {
         generateTotp();
 
+        // Update TOTP every period (e.g., 30 seconds)
         const interval = setInterval(() => {
             generateTotp();
             setRemainingTime(period);
         }, period * 1000);
 
+        // Countdown timer for the refresh
         const countdown = setInterval(() => {
             setRemainingTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
@@ -67,17 +46,16 @@ const TOTPGenerator: React.FC = () => {
         };
     }, []);
 
-
     const timerColor = remainingTime <= 5 ? 'red' : '#666';
 
     return (
         <View style={styles.container}>
             <View style={styles.totpContainer}>
                 <Text style={styles.title}>TOTP Code:</Text>
-                <Text style={styles.code}>{totpCode || 'Generating...'}</Text>
+                <Text style={styles.code}>{otp || 'Generating...'}</Text>
             </View>
             <View style={styles.timerContainer}>
-                <Text style={styles.title}>Refreshes in:</Text>
+                <Text style={styles.title}>Refreshes in: {expires}</Text>
                 <Text style={[styles.timer, { color: timerColor }]}>
                     {remainingTime} seconds
                 </Text>
