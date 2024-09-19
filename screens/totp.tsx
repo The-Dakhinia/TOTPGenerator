@@ -4,7 +4,7 @@ import { TOTP } from 'totp-generator';
 import generateTotp from 'totp-generator';
 
 
-const secret: string = 'IFYGIODSNF2TQM3QNRLUK4CPKJFW223N';
+const secret: string = 'JZ5FU3K2K5LG2TKUNBWU2MSZPJHEORTKLEZEU2KOIRTXQTTKMMZU4RCFPJMWUWJQJVCFM4LBI44XKPJ5';
 const period: number = 30;
 const digits: number = 6;
 

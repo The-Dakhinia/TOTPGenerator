@@ -3,7 +3,7 @@ import React from 'react';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 
-// Define the type for your navigation prop
+
 type RootStackParamList = {
   Button: undefined;
   TOTP: undefined;
