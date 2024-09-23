@@ -8,6 +8,8 @@ import ButtonScreen from './screens/ButtonScreen';
 import LoginScreen from './screens/LoginScreen';
 import Geolocation from '@react-native-community/geolocation';
 import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
+import WebViewExample from './screens/View';
+import HomeScreen from './screens/HomeScreen';
 
 const Stack = createStackNavigator();
 
@@ -67,7 +69,9 @@ export default function App() {
 
       {locationEnabled && (
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
+          <Stack.Navigator initialRouteName="Home">
+            <Stack.Screen name="Web" component={WebViewExample} options={{ headerShown: false }} />
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Button" component={ButtonScreen} options={{ headerShown: false }} />
             <Stack.Screen name="TOTP" component={TOTPGenerator} options={{ headerShown: false }} />
